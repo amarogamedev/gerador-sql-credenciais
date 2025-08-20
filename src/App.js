@@ -26,12 +26,20 @@ const consolidadorasCollection = createListCollection({
     items: consolidadoras.map(c => ({ label: c, value: c }))
 })
 
+const ativoCollection = createListCollection({
+    items: [
+        { label: "Todas", value: "todas" },
+        { label: "Apenas ativas", value: "ativas" },
+        { label: "Apenas desativadas", value: "desativadas" },
+    ],
+})
+
 function App() {
     const [filtros, setFiltros] = useState({
         agenciaPaytrack: false,
         nomeAgencia: "",
-        agenciaAtiva: null,
-        credencialAtiva: null,
+        agenciaAtiva: "todas",
+        credencialAtiva: "todas",
         consolidadora: [],
         tipoServico: [],
         tipoEmissao: [],
@@ -50,8 +58,8 @@ function App() {
         let where = ["a.tipo = 'PAYTRACK'"];
         if (filtros.agenciaPaytrack === true) where.push(`a.tipo_agencia = 'PAYTRACK'`);
         if (filtros.nomeAgencia) where.push(`a.nome LIKE '%${filtros.nomeAgencia}%'`);
-        if (filtros.agenciaAtiva !== null) where.push(`a.ativo = ${filtros.agenciaAtiva ? 1 : 0}`);
-        if (filtros.credencialAtiva !== null) where.push(`asv.ativo = ${filtros.credencialAtiva ? 1 : 0}`);
+        if (filtros.agenciaAtiva !== "todas") where.push(`a.ativo = ${filtros.agenciaAtiva === "ativas" ? 1 : 0}`);
+        if (filtros.credencialAtiva !== "todas") where.push(`asv.ativo = ${filtros.credencialAtiva === "ativas" ? 1 : 0}`);
         if (filtros.consolidadora.length > 0) where.push(`asv.consolidadora IN (${filtros.consolidadora.join(", ")})`);
         if (filtros.tipoServico.length > 0) where.push(`asv.servico_id IN (${filtros.tipoServico.join(", ")})`);
         if (filtros.tipoEmissao.length > 0) where.push(`asv.tipo_emissao IN (${filtros.tipoEmissao.map(e => `'${e}'`).join(", ")})`);
@@ -114,17 +122,36 @@ function App() {
             </Box>
             <Box>
                 <Text>Agências ativas</Text>
-                <NativeSelect.Root
-                    onChange={(e) =>
-                    setFiltros({...filtros, agenciaAtiva: e.target.value === "true" ? true : e.target.value === "false" ? false : null})
-                }>
-                    <NativeSelect.Field>
-                        <option value={null}>Todas</option>
-                        <option value={true}>Apenas ativas</option>
-                        <option value={false}>Apenas desativadas</option>
-                    </NativeSelect.Field>
-                    <NativeSelect.Indicator/>
-                </NativeSelect.Root>
+                <Select.Root
+                    collection={ativoCollection}
+                    size="md"
+                    width="250px"
+                    onValueChange={(e) => {
+                        setFiltros({...filtros, agenciaAtiva: e.value[0]})
+                    }}
+                >
+                    <Select.HiddenSelect />
+                    <Select.Control>
+                        <Select.Trigger>
+                            <Select.ValueText placeholder="Selecione" />
+                        </Select.Trigger>
+                        <Select.IndicatorGroup>
+                            <Select.Indicator />
+                        </Select.IndicatorGroup>
+                    </Select.Control>
+                    <Portal>
+                        <Select.Positioner>
+                            <Select.Content>
+                                {ativoCollection.items.map((item) => (
+                                    <Select.Item item={item} key={String(item.value)}>
+                                        {item.label}
+                                        <Select.ItemIndicator />
+                                    </Select.Item>
+                                ))}
+                            </Select.Content>
+                        </Select.Positioner>
+                    </Portal>
+                </Select.Root>
             </Box>
             <Box>
                 <Text>Nome da agência (Like)</Text>
@@ -135,17 +162,36 @@ function App() {
             </Box>
             <Box>
                 <Text>Credenciais ativas</Text>
-                <NativeSelect.Root
-                    onChange={(e) =>
-                    setFiltros({...filtros, credencialAtiva: e.target.value === "true" ? true : e.target.value === "false" ? false : null})
-                }>
-                    <NativeSelect.Field>
-                        <option value={null}>Todas</option>
-                        <option value={true}>Apenas ativas</option>
-                        <option value={false}>Apenas desativadas</option>
-                    </NativeSelect.Field>
-                    <NativeSelect.Indicator/>
-                </NativeSelect.Root>
+                <Select.Root
+                    collection={ativoCollection}
+                    size="md"
+                    width="250px"
+                    onValueChange={(e) => {
+                        setFiltros({...filtros, credencialAtiva: e.value[0]})
+                    }}
+                >
+                    <Select.HiddenSelect />
+                    <Select.Control>
+                        <Select.Trigger>
+                            <Select.ValueText placeholder="Selecione" />
+                        </Select.Trigger>
+                        <Select.IndicatorGroup>
+                            <Select.Indicator />
+                        </Select.IndicatorGroup>
+                    </Select.Control>
+                    <Portal>
+                        <Select.Positioner>
+                            <Select.Content>
+                                {ativoCollection.items.map((item) => (
+                                    <Select.Item item={item} key={String(item.value)}>
+                                        {item.label}
+                                        <Select.ItemIndicator />
+                                    </Select.Item>
+                                ))}
+                            </Select.Content>
+                        </Select.Positioner>
+                    </Portal>
+                </Select.Root>
             </Box>
             <Box>
                 <Text>Consolidadora</Text>
