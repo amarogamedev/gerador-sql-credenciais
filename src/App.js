@@ -44,7 +44,7 @@ function App() {
 
     const { sql } = useSql(filtros, alteracoes, acao);
 
-    return (<Box display="flex" flexDirection="column" p={4} bg={"gray.200"}>
+    return (<Box display="flex" flexDirection="column" p={4} bg={"gray.200"} h={"100vh"}>
         <Titulo/>
         <Filtros filtros={filtros} setFiltros={setFiltros} />
         {"UPDATE" === acao && <Alteracoes alteracoes={alteracoes} setAlteracoes={setAlteracoes}/>}
