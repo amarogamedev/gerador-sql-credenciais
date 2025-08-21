@@ -1,4 +1,4 @@
-# Gerador de update de credenciais em massa criado por Luis Fellipe Amaro
+# Gerador de SQL de credenciais em massa criado por Luis Fellipe Amaro
 
 ## Como utilizar
 - Defina as condições para alterar uma credencial
