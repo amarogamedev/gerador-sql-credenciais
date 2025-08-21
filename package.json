@@ -1,5 +1,5 @@
 {
-  "name": "gerador-update-credenciais",
+  "name": "gerador-sql-credenciais",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

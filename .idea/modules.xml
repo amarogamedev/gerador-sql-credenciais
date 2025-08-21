@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/gerador-update-credenciais.iml" filepath="$PROJECT_DIR$/.idea/gerador-update-credenciais.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/gerador-sql-credenciais.iml" filepath="$PROJECT_DIR$/.idea/gerador-sql-credenciais.iml" />
     </modules>
   </component>
 </project>
