@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
 
-export default function useSql(filtros, alteracoes) {
+export default function useSql(filtros, alteracoes, acao) {
     const [sql, setSql] = useState("");
 
     useEffect(() => {
@@ -25,22 +25,26 @@ export default function useSql(filtros, alteracoes) {
         if (filtros.dadosCredencial) where.push(`asv.credencial LIKE '%${filtros.dadosCredencial}%'`);
         if (filtros.nomeTipoPagamento) where.push(`tp.nm_forma_pagto = '${filtros.nomeTipoPagamento}'`);
 
-        if (alteracoes.ativo !== "nao_alterar") set.push(`asv.ativo = ${alteracoes.ativo === "ativar" ? 1 : 0}`);
-        if (alteracoes.tipoEmissao) set.push(`asv.tipo_emissao = '${alteracoes.tipoEmissao}'`);
-        if (alteracoes.identificador) set.push(`asv.identificador = '${alteracoes.identificador}'`);
-        if (alteracoes.tipoPagamento) set.push(`asv.id_tipo_pagamento = (SELECT id_tipo_pagamento FROM tipo_pagamento tp WHERE tp.nm_forma_pagto = '${alteracoes.tipoPagamento}' LIMIT 1)`);
-        if (alteracoes.aplicarMargem !== "nao_alterar") set.push(`credencial = JSON_SET(credencial, '$.aplicarMargem', ${alteracoes.aplicarMargem === "ativar" ? 1 : 0})`);
-        if (alteracoes.percentualMargem !== null) set.push(`credencial = JSON_SET(credencial, '$.percentualMargem', ${alteracoes.percentualMargem})`);
+        if (acao === "UPDATE") {
+            if (alteracoes.ativo !== "nao_alterar") set.push(`asv.ativo = ${alteracoes.ativo === "ativar" ? 1 : 0}`);
+            if (alteracoes.tipoEmissao) set.push(`asv.tipo_emissao = '${alteracoes.tipoEmissao}'`);
+            if (alteracoes.identificador) set.push(`asv.identificador = '${alteracoes.identificador}'`);
+            if (alteracoes.tipoPagamento) set.push(`asv.id_tipo_pagamento = (SELECT id_tipo_pagamento FROM tipo_pagamento tp WHERE tp.nm_forma_pagto = '${alteracoes.tipoPagamento}' LIMIT 1)`);
+            if (alteracoes.aplicarMargem !== "nao_alterar") set.push(`credencial = JSON_SET(credencial, '$.aplicarMargem', ${alteracoes.aplicarMargem === "ativar" ? 1 : 0})`);
+            if (alteracoes.percentualMargem !== null) set.push(`credencial = JSON_SET(credencial, '$.percentualMargem', ${alteracoes.percentualMargem})`);
+        }
 
         const sqlLines = [
-            "UPDATE $b.agencia_servico asv",
+            acao === "UPDATE"
+                ? "UPDATE $b.agencia_servico asv"
+                : "SELECT * FROM $b.agencia_servico asv",
             ...joins,
-            `SET ${set.join(", ")}`,
+            acao === "UPDATE" ? `SET ${set.join(", ")}` : null,
             `WHERE ${where.join(" AND ")};`
-        ];
+        ].filter(Boolean);
 
         setSql(sqlLines.join("\n"));
-    }, [filtros, alteracoes]);
+    }, [filtros, alteracoes, acao]);
 
     return { sql };
 }

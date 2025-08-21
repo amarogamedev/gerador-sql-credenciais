@@ -1,4 +1,3 @@
-import {useEffect, useState} from "react";
 import {createListCollection} from "@chakra-ui/react";
 
 export const consolidadoras = [

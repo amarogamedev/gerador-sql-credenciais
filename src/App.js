@@ -8,6 +8,18 @@ import Filtros from "./components/Filtros";
 import Alteracoes from "./components/Alteracoes";
 
 function App() {
+
+    const [acao, setAcao] = useState("SELECT");
+
+    function handleChangeAcao() {
+        if (acao === "SELECT") {
+            setAcao("UPDATE");
+        }
+        else {
+            setAcao("SELECT");
+        }
+    }
+
     const [filtros, setFiltros] = useState({
         agenciaPaytrack: false,
         nomeAgencia: "",
@@ -30,13 +42,13 @@ function App() {
         percentualMargem: null
     });
 
-    const { sql } = useSql(filtros, alteracoes);
+    const { sql } = useSql(filtros, alteracoes, acao);
 
     return (<Box display="flex" flexDirection="column" p={4} bg={"gray.200"}>
         <Titulo/>
         <Filtros filtros={filtros} setFiltros={setFiltros} />
-        <Alteracoes alteracoes={alteracoes} setAlteracoes={setAlteracoes} />
-        <GeradorSql value={sql}/>
+        {"UPDATE" === acao && <Alteracoes alteracoes={alteracoes} setAlteracoes={setAlteracoes}/>}
+        <GeradorSql value={sql} acao={acao} handleChangeAcao={handleChangeAcao}/>
         <ComoUsar/>
         <Text ml={2}>
             Criado por Luis Fellipe Amaro :)
