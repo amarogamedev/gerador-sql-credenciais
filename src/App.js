@@ -117,11 +117,11 @@ function App() {
     }, [filtros, alteracoes]);
 
     return (<Box display="flex" flexDirection="column" p={4} bg={"gray.200"}>
-        <Text fontSize="xl" my={6} textAlign="center">
+        <Text fontSize="xl" my={4} textAlign="center">
             Gerador de SQL - Alterações de Credenciais Paytrack
         </Text>
 
-        <Box bg={"white"} p={6} rounded={"lg"} my={6}>
+        <Box bg={"white"} p={6} rounded={"lg"} my={4}>
             <Text fontSize={"xl"} mb={4}>
                 Condições/Filtros
             </Text>
@@ -346,7 +346,7 @@ function App() {
             </HStack>
         </Box>
 
-        <Box bg={"white"} p={6} rounded={"lg"} mb={6}>
+        <Box bg={"white"} p={6} rounded={"lg"} mb={4}>
             <Text fontSize={"xl"} mb={4}>
                 Alterações a serem realizadas
             </Text>
@@ -483,11 +483,28 @@ function App() {
             </HStack>
         </Box>
 
-        <Box bg={"white"} p={6} rounded={"lg"} mb={6}>
+        <Box bg={"white"} p={6} rounded={"lg"} mb={4}>
             <Text fontSize={"xl"}>
                 Gerador de SQL
             </Text>
-            <Textarea mt={4} value={sql} h="60vh" readOnly/>
+            <Textarea mt={4} value={sql} minH="160px" readOnly/>
+        </Box>
+
+        <Box bg={"white"} p={6} rounded={"lg"}>
+            <Text fontSize={"xl"}>
+                Como utilizar
+            </Text>
+            <Box as="ul" listStyleType="circle" mx={6} mt={2}>
+                <li>Revise bem o script que foi gerado antes de rodar qualquer coisa em produção, ajuste se for necessário</li>
+                <li>Copie o SQL gerado acima e cole no SearchInBases do Paystore</li>
+                <li>Selecione o ambiente de produção</li>
+                <li>Ative o modo script no canto superior direito</li>
+                <li>Execute o script e copie o resultado</li>
+                <li>Agora abra a tela de executar SQL no Paystore</li>
+                <li>Selecione o ambiente de produção</li>
+                <li>Cole os scripts que foram gerados para todas as bases</li>
+                <li>Selecione todos e execute (Executar em partes caso seja um script grande)</li>
+            </Box>
         </Box>
     </Box>);
 }
