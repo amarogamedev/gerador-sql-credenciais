@@ -49,7 +49,7 @@ function App() {
         <Filtros filtros={filtros} setFiltros={setFiltros} />
         {"UPDATE" === acao && <Alteracoes alteracoes={alteracoes} setAlteracoes={setAlteracoes}/>}
         <GeradorSql value={sql} acao={acao} handleChangeAcao={handleChangeAcao}/>
-        <ComoUsar/>
+        <ComoUsar acao={acao}/>
         <Text ml={2}>
             Criado por Luis Fellipe Amaro :)
         </Text>

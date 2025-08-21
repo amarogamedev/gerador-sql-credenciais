@@ -9,10 +9,10 @@ export default function useSql(filtros, alteracoes, acao) {
         let joins = [];
 
         const precisaJoinAgencia = filtros.agenciaPaytrack === true || filtros.nomeAgencia || filtros.agenciaAtiva !== "todas";
-        if (precisaJoinAgencia) joins.push("JOIN $b.agencia a ON a.id_agencia = asv.agencia_id");
+        if (precisaJoinAgencia) joins.push("JOIN" + (acao === "UPDATE" ? " $b." : " ") + "agencia a ON a.id_agencia = asv.agencia_id");
 
         const precisaJoinTipoPagamento = filtros.nomeTipoPagamento || alteracoes.tipoPagamento;
-        if (precisaJoinTipoPagamento) joins.push("LEFT JOIN $b.tipo_pagamento tp ON tp.id_tipo_pagamento = asv.id_tipo_pagamento");
+        if (precisaJoinTipoPagamento) joins.push("LEFT JOIN" + (acao === "UPDATE" ? " $b." : " ") + "tipo_pagamento tp ON tp.id_tipo_pagamento = asv.id_tipo_pagamento");
 
         if (filtros.agenciaPaytrack === true) where.push(`a.tipo_agencia = 'PAYTRACK'`);
         if (filtros.nomeAgencia) where.push(`a.nome LIKE '%${filtros.nomeAgencia}%'`);
@@ -37,7 +37,7 @@ export default function useSql(filtros, alteracoes, acao) {
         const sqlLines = [
             acao === "UPDATE"
                 ? "UPDATE $b.agencia_servico asv"
-                : "SELECT * FROM $b.agencia_servico asv",
+                : "SELECT * FROM agencia_servico asv",
             ...joins,
             acao === "UPDATE" ? `SET ${set.join(", ")}` : null,
             `WHERE ${where.join(" AND ")};`

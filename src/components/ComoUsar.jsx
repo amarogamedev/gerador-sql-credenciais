@@ -1,6 +1,6 @@
 import {Box, Text} from "@chakra-ui/react";
 
-export default function ComoUsar() {
+export default function ComoUsar(props) {
     return <Box bg={"white"} p={6} rounded={"lg"} mb={4}>
         <Text fontSize={"xl"}>
             Como utilizar
@@ -13,12 +13,16 @@ export default function ComoUsar() {
             </li>
             <li>Copie o SQL gerado acima e cole no SearchInBases do Paystore</li>
             <li>Selecione o ambiente de produção</li>
-            <li>Ative o modo script no canto superior direito</li>
+            {props.acao === "UPDATE" && <li>Ative o modo script no canto superior direito</li>}
             <li>Execute o script e copie o resultado</li>
-            <li>Agora abra a tela de executar SQL no Paystore</li>
-            <li>Selecione o ambiente de produção</li>
-            <li>Cole os scripts que foram gerados para todas as bases</li>
-            <li>Selecione todos e execute (Executar em partes caso seja um script grande)</li>
+            {props.acao === "UPDATE" && (
+                <>
+                    <li>Agora abra a tela de executar SQL no Paystore</li>
+                    <li>Selecione o ambiente de produção</li>
+                    <li>Cole os scripts que foram gerados para todas as bases</li>
+                    <li>Selecione todos e execute (Executar em partes caso seja um script grande)</li>
+                </>
+            )}
         </Box>
     </Box>;
 }
