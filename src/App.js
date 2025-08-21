@@ -41,6 +41,14 @@ const tipoServicoCollection = createListCollection({
     ],
 });
 
+const tipoEmissaoCollection = createListCollection({
+    items: [
+        { label: "Automática", value: "AUTOMATICO" },
+        { label: "Manual", value: "MANUAL" },
+        { label: "Sistema externo", value: "SISTEMA_EXTERNO" }
+    ],
+});
+
 function App() {
     const [filtros, setFiltros] = useState({
         agenciaPaytrack: false,
@@ -69,7 +77,7 @@ function App() {
         if (filtros.credencialAtiva !== "todas") where.push(`asv.ativo = ${filtros.credencialAtiva === "ativas" ? 1 : 0}`);
         if (filtros.consolidadora.length > 0) where.push(`asv.consolidadora IN (${filtros.consolidadora.join(", ")})`);
         if (filtros.tipoServico.length > 0) where.push(`asv.servico_id IN (${filtros.tipoServico.join(", ")})`);
-        if (filtros.tipoEmissao.length > 0) where.push(`asv.tipo_emissao IN (${filtros.tipoEmissao.map(e => `'${e}'`).join(", ")})`);
+        if (filtros.tipoEmissao.length > 0) where.push(`asv.tipo_emissao IN (${filtros.tipoEmissao.join(", ")})`);
         if (filtros.identificador) where.push(`asv.identificador LIKE '%${filtros.identificador}%'`);
         if (filtros.nomeTipoPagamento) where.push(`tp.nm_forma_pagto LIKE '%${filtros.nomeTipoPagamento}%'`);
         if (filtros.loginOuSenha) where.push(`asv.credencial LIKE '%${filtros.loginOuSenha}%'`);
@@ -235,7 +243,7 @@ function App() {
                 </Select.Root>
             </Box>
             <Box>
-                <Text>Serviços</Text>
+                <Text>Serviço</Text>
                 <Select.Root
                     multiple
                     collection={tipoServicoCollection}
@@ -248,7 +256,7 @@ function App() {
                     <Select.HiddenSelect />
                     <Select.Control>
                         <Select.Trigger>
-                            <Select.ValueText placeholder="Selecione consolidadoras" />
+                            <Select.ValueText placeholder="Selecione os tipos de serviço" />
                         </Select.Trigger>
                         <Select.IndicatorGroup>
                             <Select.Indicator />
@@ -258,6 +266,40 @@ function App() {
                         <Select.Positioner>
                             <Select.Content>
                                 {tipoServicoCollection.items.map(item => (
+                                    <Select.Item item={item} key={item.value}>
+                                        {item.label}
+                                        <Select.ItemIndicator />
+                                    </Select.Item>
+                                ))}
+                            </Select.Content>
+                        </Select.Positioner>
+                    </Portal>
+                </Select.Root>
+            </Box>
+            <Box>
+                <Text>Tipo de emissão</Text>
+                <Select.Root
+                    multiple
+                    collection={tipoEmissaoCollection}
+                    size="md"
+                    width="320px"
+                    onValueChange={(e) =>
+                        setFiltros({ ...filtros, tipoEmissao: e.value })
+                    }
+                >
+                    <Select.HiddenSelect />
+                    <Select.Control>
+                        <Select.Trigger>
+                            <Select.ValueText placeholder="Selecione os tipos de emissão" />
+                        </Select.Trigger>
+                        <Select.IndicatorGroup>
+                            <Select.Indicator />
+                        </Select.IndicatorGroup>
+                    </Select.Control>
+                    <Portal>
+                        <Select.Positioner>
+                            <Select.Content>
+                                {tipoEmissaoCollection.items.map(item => (
                                     <Select.Item item={item} key={item.value}>
                                         {item.label}
                                         <Select.ItemIndicator />
