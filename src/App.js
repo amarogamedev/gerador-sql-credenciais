@@ -1,15 +1,4 @@
-import {
-    Box,
-    HStack,
-    Input,
-    Text,
-    Textarea,
-    NativeSelect,
-    CheckboxCard,
-    createListCollection,
-    Select,
-    Portal
-} from "@chakra-ui/react";
+import {Box, CheckboxCard, createListCollection, HStack, Input, Portal, Select, Text, Textarea} from "@chakra-ui/react";
 import {useEffect, useState} from "react";
 
 const consolidadoras = [
@@ -33,6 +22,24 @@ const ativoCollection = createListCollection({
         { label: "Apenas desativadas", value: "desativadas" },
     ],
 })
+
+const tipoServicoCollection = createListCollection({
+    items: [
+        { label: "Taxi", value: 1 },
+        { label: "Ônibus", value: 2 },
+        { label: "Devolução PIX", value: 3 },
+        { label: "Alimentação", value: 4 },
+        { label: "Aéreo", value: 5 },
+        { label: "Hotel", value: 6 },
+        { label: "Carro", value: 7 },
+        { label: "Quilometragem", value: 8 },
+        { label: "Combustível", value: 9 },
+        { label: "Outros", value: 10 },
+        { label: "Seguro Viagem Carteira Digital", value: 11 },
+        { label: "Diária", value: 12 },
+        { label: "Rodoviário", value: 88 },
+    ],
+});
 
 function App() {
     const [filtros, setFiltros] = useState({
@@ -217,6 +224,40 @@ function App() {
                         <Select.Positioner>
                             <Select.Content>
                                 {consolidadorasCollection.items.map(item => (
+                                    <Select.Item item={item} key={item.value}>
+                                        {item.label}
+                                        <Select.ItemIndicator />
+                                    </Select.Item>
+                                ))}
+                            </Select.Content>
+                        </Select.Positioner>
+                    </Portal>
+                </Select.Root>
+            </Box>
+            <Box>
+                <Text>Serviços</Text>
+                <Select.Root
+                    multiple
+                    collection={tipoServicoCollection}
+                    size="md"
+                    width="320px"
+                    onValueChange={(e) =>
+                        setFiltros({ ...filtros, tipoServico: e.value })
+                    }
+                >
+                    <Select.HiddenSelect />
+                    <Select.Control>
+                        <Select.Trigger>
+                            <Select.ValueText placeholder="Selecione consolidadoras" />
+                        </Select.Trigger>
+                        <Select.IndicatorGroup>
+                            <Select.Indicator />
+                        </Select.IndicatorGroup>
+                    </Select.Control>
+                    <Portal>
+                        <Select.Positioner>
+                            <Select.Content>
+                                {tipoServicoCollection.items.map(item => (
                                     <Select.Item item={item} key={item.value}>
                                         {item.label}
                                         <Select.ItemIndicator />
