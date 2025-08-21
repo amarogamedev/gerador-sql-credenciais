@@ -1,4 +1,4 @@
-import {Box, CheckboxCard, createListCollection, HStack, Input, Portal, Select, Text, Textarea} from "@chakra-ui/react";
+import {Box, CheckboxCard, createListCollection, HStack, Input, Portal, Select, Text, Textarea, NumberInput} from "@chakra-ui/react";
 import {useEffect, useState} from "react";
 
 const consolidadoras = [
@@ -20,6 +20,14 @@ const ativoCollection = createListCollection({
         {label: "Todas", value: "todas"},
         {label: "Apenas ativas", value: "ativas"},
         {label: "Apenas desativadas", value: "desativadas"},
+    ],
+})
+
+const alterarAtivoCollection = createListCollection({
+    items: [
+        {label: "Não alterar", value: "nao_alterar"},
+        {label: "Ativar", value: "ativar"},
+        {label: "Desativar", value: "desativar"},
     ],
 })
 
@@ -64,13 +72,22 @@ function App() {
     });
 
     const [alteracoes, setAlteracoes] = useState({
-        ativo: null, tipoEmissao: "", identificador: "", tipoPagamento: "", aplicarMargem: null, porcentagemMargem: ""
+        ativo: "nao_alterar", tipoEmissao: "", identificador: "", tipoPagamento: "", aplicarMargem: "nao_alterar", percentualMargem: null
     });
 
     const [sql, setSql] = useState("");
 
     useEffect(() => {
-        let where = ["a.tipo = 'PAYTRACK'"];
+        let set = [];
+        let where = [];
+        let joins = [];
+
+        const precisaJoinAgencia = filtros.agenciaPaytrack === true || filtros.nomeAgencia || filtros.agenciaAtiva !== "todas";
+        if (precisaJoinAgencia) joins.push("JOIN $b.agencia a ON a.id_agencia = asv.agencia_id");
+
+        const precisaJoinTipoPagamento = filtros.nomeTipoPagamento || alteracoes.tipoPagamento;
+        if (precisaJoinTipoPagamento) joins.push("LEFT JOIN $b.tipo_pagamento tp ON tp.id_tipo_pagamento = asv.id_tipo_pagamento");
+
         if (filtros.agenciaPaytrack === true) where.push(`a.tipo_agencia = 'PAYTRACK'`);
         if (filtros.nomeAgencia) where.push(`a.nome LIKE '%${filtros.nomeAgencia}%'`);
         if (filtros.agenciaAtiva !== "todas") where.push(`a.ativo = ${filtros.agenciaAtiva === "ativas" ? 1 : 0}`);
@@ -79,26 +96,24 @@ function App() {
         if (filtros.tipoServico.length > 0) where.push(`asv.servico_id IN (${filtros.tipoServico.join(", ")})`);
         if (filtros.tipoEmissao.length > 0) where.push(`asv.tipo_emissao IN (${filtros.tipoEmissao.join(", ")})`);
         if (filtros.identificador) where.push(`asv.identificador LIKE '%${filtros.identificador}%'`);
-        if (filtros.nomeTipoPagamento) where.push(`tp.nm_forma_pagto = '${filtros.nomeTipoPagamento}'`);
         if (filtros.dadosCredencial) where.push(`asv.credencial LIKE '%${filtros.dadosCredencial}%'`);
+        if (filtros.nomeTipoPagamento) where.push(`tp.nm_forma_pagto = '${filtros.nomeTipoPagamento}'`);
 
-        let setParts = [];
-        if (alteracoes.ativo !== null) setParts.push(`asv.ativo = ${alteracoes.ativo ? 1 : 0}`);
-        if (alteracoes.tipoEmissao) setParts.push(`asv.tipo_emissao = '${alteracoes.tipoEmissao}'`);
-        if (alteracoes.identificador) setParts.push(`asv.identificador = '${alteracoes.identificador}'`);
-        if (alteracoes.tipoPagamento) setParts.push(`asv.id_tipo_pagamento = (SELECT id_tipo_pagamento FROM tipo_pagamento tp WHERE tp.nm_forma_pagto = '${alteracoes.tipoPagamento}')`);
-        if (alteracoes.aplicarMargem !== null) setParts.push(`asv.aplicar_margem = ${alteracoes.aplicarMargem ? 1 : 0}`);
-        if (alteracoes.porcentagemMargem) setParts.push(`asv.porcentagem_margem = ${alteracoes.porcentagemMargem}`);
+        if (alteracoes.ativo !== "nao_alterar") set.push(`asv.ativo = ${alteracoes.ativo === "ativar" ? 1 : 0}`);
+        if (alteracoes.tipoEmissao) set.push(`asv.tipo_emissao = '${alteracoes.tipoEmissao}'`);
+        if (alteracoes.identificador) set.push(`asv.identificador = '${alteracoes.identificador}'`);
+        if (alteracoes.tipoPagamento) set.push(`asv.id_tipo_pagamento = (SELECT id_tipo_pagamento FROM tipo_pagamento tp WHERE tp.nm_forma_pagto = '${alteracoes.tipoPagamento}' LIMIT 1)`);
+        if (alteracoes.aplicarMargem !== "nao_alterar") set.push(`credencial = JSON_SET(credencial, '$.aplicarMargem', ${alteracoes.aplicarMargem === "ativar" ? 1 : 0})`);
+        if (alteracoes.percentualMargem !== null) set.push(`credencial = JSON_SET(credencial, '$.percentualMargem', ${alteracoes.percentualMargem})`);
 
         const sqlLines = [
-            "UPDATE agencia_servico asv",
-            "JOIN agencia a ON a.id_agencia = asv.agencia_id",
-            "LEFT JOIN tipo_pagamento tp ON tp.id_tipo_pagamento = asv.id_tipo_pagamento",
-            `SET ${setParts.join(", ")}`,
+            "UPDATE $b.agencia_servico asv",
+            ...joins,
+            `SET ${set.join(", ")}`,
             `WHERE ${where.join(" AND ")};`
         ];
-        const sqlText = sqlLines.join("\n");
-        setSql(sqlText);
+
+        setSql(sqlLines.join("\n"));
     }, [filtros, alteracoes]);
 
     return (<Box display="flex" flexDirection="column" p={4} bg={"gray.200"}>
@@ -168,7 +183,7 @@ function App() {
                 <Box minW="220px" maxW="220px">
                     <Text>Nome da agência (Like)</Text>
                     <Input
-                        placeholder={"Nome da agência"} value={filtros.nomeAgencia}
+                        placeholder={"Digite"} value={filtros.nomeAgencia}
                         onChange={(e) => setFiltros({...filtros, nomeAgencia: e.target.value.trim()})}>
                     </Input>
                 </Box>
@@ -219,7 +234,7 @@ function App() {
                         <Select.HiddenSelect/>
                         <Select.Control>
                             <Select.Trigger>
-                                <Select.ValueText placeholder="Selecione consolidadoras"/>
+                                <Select.ValueText placeholder="Selecione"/>
                             </Select.Trigger>
                             <Select.IndicatorGroup>
                                 <Select.Indicator/>
@@ -253,7 +268,7 @@ function App() {
                         <Select.HiddenSelect/>
                         <Select.Control>
                             <Select.Trigger>
-                                <Select.ValueText placeholder="Selecione os tipos de serviço"/>
+                                <Select.ValueText placeholder="Selecione"/>
                             </Select.Trigger>
                             <Select.IndicatorGroup>
                                 <Select.Indicator/>
@@ -287,7 +302,7 @@ function App() {
                         <Select.HiddenSelect/>
                         <Select.Control>
                             <Select.Trigger>
-                                <Select.ValueText placeholder="Selecione os tipos de emissão"/>
+                                <Select.ValueText placeholder="Selecione"/>
                             </Select.Trigger>
                             <Select.IndicatorGroup>
                                 <Select.Indicator/>
@@ -310,21 +325,21 @@ function App() {
                 <Box minW="220px" maxW="220px">
                     <Text>Identificador (Like)</Text>
                     <Input
-                        placeholder={"Identificador da credencial"} value={filtros.identificador}
+                        placeholder={"Digite"} value={filtros.identificador}
                         onChange={(e) => setFiltros({...filtros, identificador: e.target.value.trim()})}>
                     </Input>
                 </Box>
                 <Box minW="220px" maxW="220px">
                     <Text>Nome do tipo de pagamento</Text>
                     <Input
-                        placeholder={"Nome do tipo de pagamento"} value={filtros.nomeTipoPagamento}
+                        placeholder={"Digite"} value={filtros.nomeTipoPagamento}
                         onChange={(e) => setFiltros({...filtros, nomeTipoPagamento: e.target.value.trim()})}>
                     </Input>
                 </Box>
                 <Box minW="220px" maxW="220px">
                     <Text>Dados da credencial (Like)</Text>
                     <Input
-                        placeholder={"Dados da credencial"} value={filtros.dadosCredencial}
+                        placeholder={"Digite"} value={filtros.dadosCredencial}
                         onChange={(e) => setFiltros({...filtros, dadosCredencial: e.target.value.trim()})}>
                     </Input>
                 </Box>
@@ -338,13 +353,13 @@ function App() {
 
             <HStack spacing={4} align="stretch" flexWrap="wrap">
                 <Box minW="220px" maxW="220px">
-                    <Text>Credencial ativa</Text>
+                    <Text>Ativar/Desativar credencial</Text>
                     <Select.Root
-                        collection={ativoCollection}
+                        collection={alterarAtivoCollection}
                         size="md"
                         width="220px"
                         onValueChange={(e) => {
-                            setFiltros({...filtros, credencialAtiva: e.value[0]})
+                            setAlteracoes({...alteracoes, ativo: e.value[0]})
                         }}
                     >
                         <Select.HiddenSelect/>
@@ -359,7 +374,7 @@ function App() {
                         <Portal>
                             <Select.Positioner>
                                 <Select.Content>
-                                    {ativoCollection.items.map((item) => (
+                                    {alterarAtivoCollection.items.map((item) => (
                                         <Select.Item item={item} key={String(item.value)}>
                                             {item.label}
                                             <Select.ItemIndicator/>
@@ -369,6 +384,101 @@ function App() {
                             </Select.Positioner>
                         </Portal>
                     </Select.Root>
+                </Box>
+                <Box minW="220px" maxW="220px">
+                    <Text>Tipo de emissão</Text>
+                    <Select.Root
+                        collection={tipoEmissaoCollection}
+                        size="md"
+                        width="220px"
+                        onValueChange={(e) =>
+                            setAlteracoes({...alteracoes, tipoEmissao: e.value})
+                        }
+                    >
+                        <Select.HiddenSelect/>
+                        <Select.Control>
+                            <Select.Trigger>
+                                <Select.ValueText placeholder="Selecione"/>
+                            </Select.Trigger>
+                            <Select.IndicatorGroup>
+                                <Select.Indicator/>
+                            </Select.IndicatorGroup>
+                        </Select.Control>
+                        <Portal>
+                            <Select.Positioner>
+                                <Select.Content>
+                                    {tipoEmissaoCollection.items.map(item => (
+                                        <Select.Item item={item} key={item.value}>
+                                            {item.label}
+                                            <Select.ItemIndicator/>
+                                        </Select.Item>
+                                    ))}
+                                </Select.Content>
+                            </Select.Positioner>
+                        </Portal>
+                    </Select.Root>
+                </Box>
+                <Box minW="220px" maxW="220px">
+                    <Text>Identificador</Text>
+                    <Input
+                        placeholder={"Digite"} value={alteracoes.identificador}
+                        onChange={(e) => setAlteracoes({...alteracoes, identificador: e.target.value.trim()})}>
+                    </Input>
+                </Box>
+                <Box minW="220px" maxW="220px">
+                    <Text>Nome do tipo de pagamento</Text>
+                    <Input
+                        placeholder={"Digite"} value={alteracoes.tipoPagamento}
+                        onChange={(e) => setAlteracoes({...alteracoes, tipoPagamento: e.target.value.trim()})}>
+                    </Input>
+                </Box>
+                <Box minW="220px" maxW="220px">
+                    <Text>Ativar/Desativar margem</Text>
+                    <Select.Root
+                        collection={alterarAtivoCollection}
+                        size="md"
+                        width="220px"
+                        onValueChange={(e) => {
+                            setAlteracoes({...alteracoes, aplicarMargem: e.value[0]})
+                        }}
+                    >
+                        <Select.HiddenSelect/>
+                        <Select.Control>
+                            <Select.Trigger>
+                                <Select.ValueText placeholder="Selecione"/>
+                            </Select.Trigger>
+                            <Select.IndicatorGroup>
+                                <Select.Indicator/>
+                            </Select.IndicatorGroup>
+                        </Select.Control>
+                        <Portal>
+                            <Select.Positioner>
+                                <Select.Content>
+                                    {alterarAtivoCollection.items.map((item) => (
+                                        <Select.Item item={item} key={String(item.value)}>
+                                            {item.label}
+                                            <Select.ItemIndicator/>
+                                        </Select.Item>
+                                    ))}
+                                </Select.Content>
+                            </Select.Positioner>
+                        </Portal>
+                    </Select.Root>
+                </Box>
+                <Box minW="220px" maxW="220px">
+                    <Text>Percentual de margem</Text>
+                    <NumberInput.Root
+                        value={alteracoes.percentualMargem}
+                        min={0}
+                        max={100}
+                        onValueChange={(value) => {
+                            const valor = value.valueAsNumber
+                            setAlteracoes({...alteracoes, percentualMargem: Number.isNaN(valor) ? null : valor});
+                        }}
+                    >
+                        <NumberInput.Input placeholder="Digite" />
+                        <NumberInput.Control/>
+                    </NumberInput.Root>
                 </Box>
             </HStack>
         </Box>
