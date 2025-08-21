@@ -495,7 +495,9 @@ function App() {
                 Como utilizar
             </Text>
             <Box as="ul" listStyleType="circle" mx={6} mt={2}>
-                <li>Revise bem o script que foi gerado antes de rodar qualquer coisa em produção, ajuste se for necessário</li>
+                <li>Defina as condições para alterar uma credencial</li>
+                <li>Defina as alterações que serão realizadas</li>
+                <li>Revise bem o script que foi gerado antes de rodar qualquer coisa em produção, ajuste se for necessário!!!</li>
                 <li>Copie o SQL gerado acima e cole no SearchInBases do Paystore</li>
                 <li>Selecione o ambiente de produção</li>
                 <li>Ative o modo script no canto superior direito</li>
