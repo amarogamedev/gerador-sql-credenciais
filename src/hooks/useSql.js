@@ -18,9 +18,9 @@ export default function useSql(filtros, alteracoes, acao) {
         if (filtros.nomeAgencia) where.push(`a.nome LIKE '%${filtros.nomeAgencia}%'`);
         if (filtros.agenciaAtiva !== "todas") where.push(`a.ativo = ${filtros.agenciaAtiva === "ativas" ? 1 : 0}`);
         if (filtros.credencialAtiva !== "todas") where.push(`asv.ativo = ${filtros.credencialAtiva === "ativas" ? 1 : 0}`);
-        if (filtros.consolidadora.length > 0) where.push(`asv.consolidadora IN (${filtros.consolidadora.join(", ")})`);
-        if (filtros.tipoServico.length > 0) where.push(`asv.servico_id IN (${filtros.tipoServico.join(", ")})`);
-        if (filtros.tipoEmissao.length > 0) where.push(`asv.tipo_emissao IN (${filtros.tipoEmissao.join(", ")})`);
+        if (filtros.consolidadora.length > 0) where.push(`asv.consolidadora IN (${filtros.consolidadora.map(v => `'${v}'`).join(", ")})`);
+        if (filtros.tipoServico.length > 0) where.push(`asv.servico_id IN (${filtros.tipoServico.map(v => `'${v}'`).join(", ")})`);
+        if (filtros.tipoEmissao.length > 0) where.push(`asv.tipo_emissao IN (${filtros.tipoEmissao.map(v => `'${v}'`).join(", ")})`);
         if (filtros.identificador) where.push(`asv.identificador LIKE '%${filtros.identificador}%'`);
         if (filtros.dadosCredencial) where.push(`asv.credencial LIKE '%${filtros.dadosCredencial}%'`);
         if (filtros.nomeTipoPagamento) where.push(`tp.nm_forma_pagto = '${filtros.nomeTipoPagamento}'`);
